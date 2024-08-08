@@ -1,0 +1,40 @@
+# Node_HelloWorld
+A docker container wrapping a NodeJS instance to serve a basic Hello World web page.
+### Instructions to run container
+Before running the container, make sure that the Docker Engine is installed on the system. To run the container, simply pull the repository and run `sudo docker compose up -d`. This will spin up a NodeJS container that serves a Hello World webpage on port 8080, which can be used to test for network configurations and whether things are routed correctly or not.
+## Using NginX as a Reverse Proxy
+To use NginX as a reverse proxy (to forward port 80 to the server at port 8080), run `sudo nano /etc/nginx/sites-available/{your_domain}`, making sure to replace `{your_domain}` with a registered top level domain name (for example through CloudFlare). For example, if you want to forward requests for `example.com`, then in your terminal you can run `sudo nano /etc/nginx/sites-available/example.com`.
+This will open a new configuration file for NginX, where you can enter the following:
+```
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name {optional_sub_domain.your_domain};
+        
+    location / {
+        proxy_pass http://127.0.0.1:8080/;
+        include proxy_params;
+    }
+}
+```
+The `server_name` field lets NginX know to forward requests made to `{optional_sub_domain.your_domain}`. For example, if you want to forward all requests made to `example.com` then you can replace the entry in the `server_name` field with that domain name. If you want to only forward specific requests made to a sub-domain, for example perhaps to `helloworld.example.com` then you can replace it with that domain name instead.
+
+The `proxy_pass` field tells NginX to forward all requests to a target server address, where in this case will be to `http://127.0.0.1:8080/`, which is the containerized NodeJS instance.
+
+The following config file shows an entry that forwards `helloworld.example.com` and `helloworld2.example.com` to the NodeJS instance:
+```
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name helloworld.example.com helloworld2.example.com;
+        
+    location / {
+        proxy_pass http://127.0.0.1:8080/;
+        include proxy_params;
+    }
+}
+```
+## Setting up a CI/CD pipeline
+--Will be implemented soon--
