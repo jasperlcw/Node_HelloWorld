@@ -1,7 +1,7 @@
 # Node_HelloWorld
 A docker container wrapping a NodeJS instance to serve a basic Hello World web page.
-### Instructions to run container
-Before running the container, make sure that the Docker Engine is installed on the system. To run the container, simply pull the repository and run `sudo docker compose up -d`. This will spin up a NodeJS container that serves a Hello World webpage on port 8080, which can be used to test for network configurations and whether things are routed correctly or not.
+### Instructions to deploy container
+Before running the container, make sure that the Docker Engine is installed on the system. To run the container, simply pull the repository and run `sudo docker compose up -d`. This will build and spin up a NodeJS container that serves a Hello World webpage on port 8080, which can be used to test for network configurations and whether things are routed correctly or not.
 ## Using NginX as a Reverse Proxy
 To use NginX as a reverse proxy (to forward port 80 to the server at port 8080), run `sudo nano /etc/nginx/sites-available/{your_domain}`, making sure to replace `{your_domain}` with a registered top level domain name (for example through CloudFlare). For example, if you want to forward requests for `example.com`, then in your terminal you can run `sudo nano /etc/nginx/sites-available/example.com`.
 This will open a new configuration file for NginX, where you can enter the following:
@@ -42,4 +42,4 @@ You can now test the configuration file for any syntax errors. If the test fails
 
 When the NginX test passes successfully, run `sudo systemctl restart nginx` to restart the `systemd` service for it.
 ## Setting up a CI/CD pipeline
---Will be implemented soon--
+A pipeline for this project is set up through GitHub Actions, where a Runner is set up in a Linux instance as a `systemd` service to respond to events from the remote repository. On a push to the main branch, a trigger is sent to the Runner to rebuild and redeploy the Hello World conatainer.
