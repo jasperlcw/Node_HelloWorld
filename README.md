@@ -36,5 +36,10 @@ server {
     }
 }
 ```
+Save and exit the config file, then run `sudo ln -s /etc/nginx/sites-available/{your_domain} /etc/nginx/sites-enabled/`, making sure to replace `{your_domain}` with your own domain.
+
+You can now test the configuration file for any syntax errors. If the test fails with `No such file or directory` as part of its contents, then double check the `/etc/nginx/sites-enabled/` directory to remove any broken symlinks.
+
+When the NginX test passes successfully, run `sudo systemctl restart nginx` to restart the `systemd` service for it.
 ## Setting up a CI/CD pipeline
 --Will be implemented soon--
