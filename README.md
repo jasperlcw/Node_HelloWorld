@@ -43,3 +43,5 @@ You can now test the configuration file for any syntax errors. If the test fails
 When the NginX test passes successfully, run `sudo systemctl restart nginx` to restart the `systemd` service for it.
 ## Setting up a CI/CD pipeline
 A pipeline for this project is set up through GitHub Actions, where a Runner is set up in a Linux instance as a `systemd` service to respond to events from the remote repository. On a push to the main branch, a trigger is sent to the Runner to rebuild and redeploy the Hello World conatainer.
+## AWS EC2 configuration
+An Amazon EC2 t2.micro instance running the Ubuntu base image was used to host a Hello World container. Although UFW was not set up, the Security Group policy is set to only allow inbound and outbound on ports 443, 80, and 22 to the public. Port 8080 was open for a brief time to test the NodeJS instance.
