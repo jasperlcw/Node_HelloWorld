@@ -10,11 +10,12 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Pull Repo
-        run: git pull
-
       - name: Build and Deploy Docker Image
         run: |
           cd /home/ubuntu/Node_HelloWorld
-          sudo docker compose up -d
+          sudo docker compose up -d --build
+
+      - name: Remove dangling Docker Images
+        run: |
+          sudo docker image prune -f
           
