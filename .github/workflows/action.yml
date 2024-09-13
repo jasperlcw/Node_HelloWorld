@@ -3,7 +3,7 @@ env:
   ECS_SERVICE: HelloWorld_Service
   ECS_CLUSTER: HelloWorld_Cluster
   ECS_TASK_DEFINITION: .aws/task-definition.json
-  CONTAINER_NAME: HelloWorld_Container
+  CONTAINER_NAME: Node_HelloWorld_Container
 
 name: Push the Docker image to AWS ECR Repo
 on:
