@@ -1,21 +1,34 @@
-name: myWorkflow
+name: Push the Docker image to AWS ECR Repo
 on:
   push:
     branches:
     - main
 jobs:
   build:
-    runs-on: self-hosted
+    name: Build
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Build and Deploy Docker Image
-        run: |
-          cd /home/ubuntu/Node_HelloWorld
-          sudo docker compose up -d --build
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::879381256847:role/JWongNodeHelloWorldGithubActionsRole
+          aws-region: us-east-2
 
-      - name: Remove dangling Docker Images
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2.0.1
+      
+      - name: Build, tag and push image to ECR
+        id: build-image
+        env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: ${{ secrets.ECR_REPO_NAME }}
+            IMAGE_TAG: latest
         run: |
-          sudo docker image prune -f
-          
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
