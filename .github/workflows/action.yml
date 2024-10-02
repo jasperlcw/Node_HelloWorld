@@ -53,6 +53,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3.1.2
 
       - name: Apply Terraform config
+        working-directory: scripts/terraform
         run: | 
           terraform init
           terraform apply -auto-approve
