@@ -7,9 +7,16 @@ env:
 
 name: Push the Docker image to AWS ECR Repo
 on:
-  push:
-    branches:
-    - main
+  workflow_dispatch:
+    inputs:
+      tf-cmd:
+        description: 'The command to run terraform with'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
 jobs:
   build:
     name: Build
@@ -44,8 +51,17 @@ jobs:
       - name: HashiCorp - Setup Terraform
         uses: hashicorp/setup-terraform@v3.1.2
 
-      - name: Apply Terraform config
+      - name: Initialize terraform
         working-directory: scripts/terraform
         run: | 
           terraform init
-          terraform apply -auto-approve
+      
+      - name: Run terraform plan
+        if: ${{ github.event.inputs.tf-cmd == 'plan' }}
+        working-directory: scripts
+        run: ./terraform-check.sh
+      
+      - name: Run terraform apply
+        if: ${{ github.event.inputs.tf-cmd == 'apply' }}
+        working-directory: scripts/terraform
+        run: terraform apply -auto-approve
