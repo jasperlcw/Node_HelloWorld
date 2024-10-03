@@ -2,7 +2,7 @@ resource "aws_ecs_service" "helloworld-service" {
   name = "helloworld-service"
   cluster = aws_ecs_cluster.helloworld-cluster.id
   task_definition = aws_ecs_task_definition.helloworld-td.arn
-  desired_count = 0
+  desired_count = 1
   launch_type = "FARGATE"
 
   network_configuration {
@@ -12,7 +12,7 @@ resource "aws_ecs_service" "helloworld-service" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.alb-target-group.arn
+    target_group_arn = aws_lb_target_group.nlb-target-group.arn
     container_name = "helloworld-container"
     container_port = 8080
   }

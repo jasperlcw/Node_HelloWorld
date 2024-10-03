@@ -16,10 +16,10 @@ resource "aws_lb" "helloworld-nlb" {
 
 resource "aws_lb_target_group" "nlb-target-group" {
   name = "nlb-target-group"
-  port = 80
+  port = 8080
   protocol = "TCP"
   vpc_id = aws_vpc.helloworld_vpc.id
-  target_type = "alb"
+  target_type = "ip"
 }
 
 resource "aws_lb_listener" "nlb-listener" {
@@ -32,8 +32,8 @@ resource "aws_lb_listener" "nlb-listener" {
   }
 }
 
-resource "aws_lb_target_group_attachment" "nlb-to-alb" {
-  target_group_arn = aws_lb_target_group.nlb-target-group.arn
-  target_id = aws_lb.helloworld-alb.arn
-  port = 80
-}
+# resource "aws_lb_target_group_attachment" "nlb-to-alb" {
+#   target_group_arn = aws_lb_target_group.nlb-target-group.arn
+#   target_id = aws_lb.helloworld-alb.arn
+#   port = 80
+# }
