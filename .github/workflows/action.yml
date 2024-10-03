@@ -32,7 +32,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
           role-to-assume: ${{ secrets.AWS_GH_ACTIONS_ROLE_ARN }}
-          aws-region: us-east-2
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to ECR
         id: login-ecr
@@ -47,7 +47,12 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-      
+
+      - name: Remove untagged images from ECR
+        run: |
+          IMAGES_TO_DELETE=$( aws ecr list-images --region ${{ secrets.AWS_REGION }} --repository-name ${{ secrets.ECR_REPO_NAME }} --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
+          aws ecr batch-delete-image --region ${{ secrets.AWS_REGION }} --repository-name ${{ secrets.ECR_REPO_NAME }} --image-ids "$IMAGES_TO_DELETE" || true
+
       - name: HashiCorp - Setup Terraform
         uses: hashicorp/setup-terraform@v3.1.2
 
