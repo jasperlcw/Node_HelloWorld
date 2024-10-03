@@ -31,9 +31,3 @@ resource "aws_lb_listener" "nlb-listener" {
     target_group_arn = aws_lb_target_group.nlb-target-group.arn
   }
 }
-
-# resource "aws_lb_target_group_attachment" "nlb-to-alb" {
-#   target_group_arn = aws_lb_target_group.nlb-target-group.arn
-#   target_id = aws_lb.helloworld-alb.arn
-#   port = 80
-# }
