@@ -53,8 +53,7 @@ jobs:
 
       - name: Initialize terraform
         working-directory: scripts/terraform
-        run: | 
-          terraform init
+        run: terraform init
       
       - name: Run terraform plan
         if: ${{ github.event.inputs.tf-cmd == 'plan' }}
