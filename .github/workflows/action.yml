@@ -40,7 +40,7 @@ jobs:
         working-directory: scripts
         run: |
           echo "is_priv=$(./check-privileged-user.sh ${{ github.event.pusher.name }})" >> $GITHUB_OUTPUT
-          if [ "$is_priv" = true ]; then
+          if [ "$is_priv" = "true" ]; then
             echo "${{ github.event.pusher.name }} is a privileged user."
           else
             echo "${{ github.event.pusher.name }} is not a privileged user."
