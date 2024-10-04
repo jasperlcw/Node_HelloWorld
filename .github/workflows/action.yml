@@ -1,7 +1,7 @@
 env:
   ECR_REPOSITORY: ${{ secrets.ECR_REPO_NAME }}
 
-name: Push the Docker image to AWS ECR Repo
+name: Push the Docker image to AWS ECR Repo and Deploy to ECS
 on:
   workflow_dispatch:
     inputs:
@@ -91,13 +91,19 @@ jobs:
           echo "clean_deploy=$clean_deploy" >> $GITHUB_OUTPUT
       
       - name: Run terraform apply
-        if: ${{ ( github.event_name == 'push' || github.event.inputs.tf-cmd == 'apply' ) && ( steps.priv-check.outputs.is_priv == 'true' || steps.tf-plan.outputs.clean_deploy == 'true' ) }}
+        if: ${{ ( github.event_name == 'push' || github.event.inputs.tf-cmd == 'apply' ) }}
         working-directory: scripts/terraform
         run: |
           clean_deploy=${{ steps.tf-plan.outputs.clean_deploy }}
+          priv_user=${{ steps.priv-check.outputs.is_priv }}
           if [ "$clean_deploy" = "true" ]; then
             echo 'Running terraform apply as it is a clean deploy.'
-          else
+            terraform apply -auto-approve
+          elif [ "$priv_user" = 'true' ]
             echo 'Running terraform apply as the workflow was initiated by a privileged user.'
+            terraform apply -auto-approve
+          else 
+            echo 'Failing the workflow as it was neither initiated by a privileged user nor was it a clean deploy.'
+            exit 1
           fi
-          terraform apply -auto-approve
+          
