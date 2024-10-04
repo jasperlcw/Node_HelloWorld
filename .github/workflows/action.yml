@@ -38,7 +38,8 @@ jobs:
         id: priv-check
         working-directory: scripts
         run: |
-          echo "is_priv=$(./check-privileged-user.sh ${{ github.triggering_actor }})" >> $GITHUB_OUTPUT
+          is_priv=$(./check-privileged-user.sh ${{ github.triggering_actor }})
+          echo "is_priv=$is_priv" >> $GITHUB_OUTPUT
           if [ "$is_priv" = "true" ]; then
             echo "${{ github.triggering_actor }} is a privileged user."
           else
