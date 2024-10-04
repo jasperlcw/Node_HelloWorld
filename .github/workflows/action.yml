@@ -99,7 +99,7 @@ jobs:
           if [ "$clean_deploy" = "true" ]; then
             echo 'Running terraform apply as it is a clean deploy.'
             terraform apply -auto-approve
-          elif [ "$priv_user" = 'true' ]
+          elif [ "$priv_user" = 'true' ]; then 
             echo 'Running terraform apply as the workflow was initiated by a privileged user.'
             terraform apply -auto-approve
           else 
