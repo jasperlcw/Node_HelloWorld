@@ -35,7 +35,6 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Check privileged user
-        if: ${{ github.event_name == 'push' }}
         id: priv-check
         working-directory: scripts
         run: |
