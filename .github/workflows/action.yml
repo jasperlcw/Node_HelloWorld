@@ -39,11 +39,11 @@ jobs:
         id: priv-check
         working-directory: scripts
         run: |
-          echo "is_priv=$(./check-privileged-user.sh ${{ github.event.pusher.name }})" >> $GITHUB_OUTPUT
+          echo "is_priv=$(./check-privileged-user.sh ${{ github.triggering_actor }})" >> $GITHUB_OUTPUT
           if [ "$is_priv" = "true" ]; then
-            echo "${{ github.event.pusher.name }} is a privileged user."
+            echo "${{ github.triggering_actor }} is a privileged user."
           else
-            echo "${{ github.event.pusher.name }} is not a privileged user."
+            echo "${{ github.triggering_actor }} is not a privileged user."
           fi   
 
       - name: Login to ECR
@@ -75,11 +75,29 @@ jobs:
         run: terraform init
       
       - name: Run terraform plan
+        id: tf-plan
         if: ${{ github.event_name == 'push' || github.event.inputs.tf-cmd == 'plan' }}
         working-directory: scripts
-        run: ./terraform-check.sh
+        run: |
+          status=0
+          ./terraform-check.sh || status="$?"
+          if [ "$status" -eq 0 ]; then
+            clean_deploy='true'
+          elif [ "$status" -eq 1 ]; then
+            clean_deploy='false'
+          elif [ "$status" -eq 255 ]; then
+            clean_deploy='err'
+          fi
+          echo "clean_deploy=$clean_deploy" >> $GITHUB_OUTPUT
       
       - name: Run terraform apply
-        if: ${{ ( github.event_name == 'push' || github.event.inputs.tf-cmd == 'apply' ) && steps.priv-check.outputs.is_priv == 'true' }}
+        if: ${{ ( github.event_name == 'push' || github.event.inputs.tf-cmd == 'apply' ) && ( steps.priv-check.outputs.is_priv == 'true' || steps.tf-plan.outputs.clean_deploy == 'true' ) }}
         working-directory: scripts/terraform
-        run: terraform apply -auto-approve
+        run: |
+          clean_deploy=${{ steps.tf-plan.outputs.clean_deploy }}
+          if [ "$clean_deploy" = "true" ]; then
+            echo 'Running terraform apply as it is a clean deploy.'
+          else
+            echo 'Running terraform apply as the workflow was initiated by a privileged user.'
+          fi
+          terraform apply -auto-approve
