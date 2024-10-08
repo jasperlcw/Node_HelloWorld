@@ -86,12 +86,13 @@ jobs:
             echo "Deployment is a clean deploy"
           elif [ "$status" -eq 1 ]; then
             clean_deploy='false'
-            echo "Deployment is a clean deploy"
+            echo "Deployment is not a clean deploy"
           elif [ "$status" -eq 255 ]; then
             clean_deploy='err'
             echo "There is a syntax error in the terraform configuration"
             exit 1
           fi
+          echo "clean_deploy=$clean_deploy"
           echo "clean_deploy=$clean_deploy" >> $GITHUB_OUTPUT
       
       - name: Run terraform apply
