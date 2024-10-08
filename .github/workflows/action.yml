@@ -83,16 +83,15 @@ jobs:
           ./terraform-check.sh || status="$?"
           if [ "$status" -eq 0 ]; then
             clean_deploy='true'
-            echo "Deployment is a clean deploy"
+            echo "Deployment is a clean deploy."
           elif [ "$status" -eq 1 ]; then
             clean_deploy='false'
-            echo "Deployment is not a clean deploy"
+            echo "Deployment is not a clean deploy, so terraform apply will not be run."
           elif [ "$status" -eq 255 ]; then
             clean_deploy='err'
-            echo "There is a syntax error in the terraform configuration"
+            echo "There is a syntax error in the terraform configuration. Aborting workflow."
             exit 1
           fi
-          echo "clean_deploy=$clean_deploy"
           echo "clean_deploy=$clean_deploy" >> $GITHUB_OUTPUT
       
       - name: Run terraform apply
