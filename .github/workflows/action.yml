@@ -91,7 +91,7 @@ jobs:
           echo "clean_deploy=$clean_deploy" >> $GITHUB_OUTPUT
       
       - name: Run terraform apply
-        if: ${{ ( github.event_name == 'push' || github.event.inputs.tf-cmd == 'apply' ) }}
+        if: ${{ ( github.event.inputs.tf-cmd == 'apply' || steps.tf-plan.outputs.clean_deploy == 'true' ) }}
         working-directory: scripts/terraform
         run: |
           clean_deploy=${{ steps.tf-plan.outputs.clean_deploy }}
