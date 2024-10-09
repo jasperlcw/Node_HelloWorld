@@ -1,6 +1,3 @@
-env:
-  ECR_REPOSITORY: ${{ secrets.ECR_REPO_NAME }}
-
 name: Push the Docker image to AWS ECR Repo and Deploy to ECS
 on:
   workflow_dispatch:
@@ -16,14 +13,53 @@ on:
   push:
     branches:
     - main
-  
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
 jobs:
-  build:
-    name: Build
+  aws-docker:
+    name: Create and Publish Docker image on AWS ECR
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          role-to-assume: ${{ secrets.AWS_GH_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        if: ${{ github.event_name == 'push' }}
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2.0.1
+      
+      - name: Build, tag and push image to ECR
+        if: ${{ github.event_name == 'push' }}
+        id: build-image
+        env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: ${{ secrets.ECR_REPO_NAME }}
+            IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Remove untagged images from ECR
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          IMAGES_TO_DELETE=$( aws ecr list-images --region ${{ env.AWS_REGION }} --repository-name ${{ secrets.ECR_REPO_NAME }} --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
+          aws ecr batch-delete-image --region ${{ env.AWS_REGION }} --repository-name ${{ secrets.ECR_REPO_NAME }} --image-ids "$IMAGES_TO_DELETE" || true
+      
+  aws-deploy:
+    name: Deploy to AWS via Terraform
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -44,36 +80,15 @@ jobs:
             echo "${{ github.triggering_actor }} is a privileged user."
           else
             echo "${{ github.triggering_actor }} is not a privileged user."
-          fi   
-
-      - name: Login to ECR
-        if: ${{ github.event_name == 'push' }}
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2.0.1
-      
-      - name: Build, tag and push image to ECR
-        if: ${{ github.event_name == 'push' }}
-        id: build-image
-        env:
-            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            IMAGE_TAG: latest
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-      - name: Remove untagged images from ECR
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          IMAGES_TO_DELETE=$( aws ecr list-images --region ${{ secrets.AWS_REGION }} --repository-name ${{ secrets.ECR_REPO_NAME }} --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json )
-          aws ecr batch-delete-image --region ${{ secrets.AWS_REGION }} --repository-name ${{ secrets.ECR_REPO_NAME }} --image-ids "$IMAGES_TO_DELETE" || true
+          fi
 
       - name: HashiCorp - Setup Terraform
         uses: hashicorp/setup-terraform@v3.1.2
-
+  
       - name: Initialize terraform
         working-directory: scripts/terraform
         run: terraform init
-      
+
       - name: Run terraform plan
         id: tf-plan
         if: ${{ (github.event_name == 'push') || (github.event.inputs.tf-cmd == 'plan') }}
