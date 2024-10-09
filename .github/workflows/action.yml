@@ -92,7 +92,7 @@ jobs:
             echo "Deployment is a clean deploy with only changes to ECS detected."
           elif [ "$status" -eq 2 ]; then
             clean_deploy='false'
-            echo "Deployment is not a clean deploy, so changes will not be applied."
+            echo "Deployment is not a clean deploy (changes other than to ECS were found), so changes will not be applied."
           elif [ "$status" -eq 255 ]; then
             clean_deploy='err'
             echo "There is a syntax error in the terraform configuration. Aborting workflow."
