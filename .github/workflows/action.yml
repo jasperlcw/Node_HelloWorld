@@ -118,7 +118,7 @@ jobs:
             terraform apply -auto-approve
           else 
             echo 'Failing the workflow as it was neither initiated by a privileged user nor was it a clean deploy.'
-            echo 'If you are not a privileged user but would like to deploy changes to ECR, please run the workflow from the terraform plan stage.'
+            echo 'If you are not a privileged user but would like to deploy changes to ECS, please run the workflow from the terraform plan stage.'
             exit 1
           fi
           
