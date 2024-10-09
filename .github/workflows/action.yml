@@ -59,6 +59,7 @@ jobs:
       
   aws-deploy:
     name: Deploy to AWS via Terraform
+    needs: [aws-docker]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
