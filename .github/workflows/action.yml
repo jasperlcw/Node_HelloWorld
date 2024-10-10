@@ -93,7 +93,7 @@ jobs:
 
       - name: Run terraform plan
         id: tf-plan
-        if: ${{ (github.event_name == 'push') || (github.event.inputs.tf-cmd == 'plan') && (steps.priv-check.outputs.is_priv != 'true') }}
+        if: ${{ !(steps.priv-check.outputs.is_priv == 'true') && (github.event_name == 'push' || github.event.inputs.tf-cmd == 'plan') }}
         working-directory: scripts
         run: |
           echo "clean_deploy=$(./tf-plan-script.sh)" >> $GITHUB_OUTPUT
