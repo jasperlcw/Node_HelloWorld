@@ -95,30 +95,9 @@ jobs:
         if: ${{ (github.event_name == 'push') || (github.event.inputs.tf-cmd == 'plan') }}
         working-directory: scripts
         run: |
-          status=0
-          set +e
-          ./terraform-check.sh
-          status="$?"
-          set -e
-          if [ "$status" -eq 0 ]; then
-            clean_deploy='false'
-            echo "No changes were found to the AWS infrastructure. Exiting."
-          elif [ "$status" -eq 1 ]; then
-            clean_deploy='true'
-            echo "Deployment is a clean deploy with only changes to ECS detected."
-          elif [ "$status" -eq 2 ]; then
-            clean_deploy='false'
-            echo "Deployment is not a clean deploy (changes other than to ECS were found), so changes will not be applied."
-          elif [ "$status" -eq 255 ]; then
-            clean_deploy='err'
-            echo "There is a syntax error in the terraform configuration. Aborting workflow."
-            exit 1
-          else
-            clean_deploy='err'
-            echo "Uncaught exit code in the terraform check script. Aborting workflow."
-            exit 1
-          fi
-          echo "clean_deploy=$clean_deploy" >> $GITHUB_OUTPUT
+          echo "clean_deploy=$(./tf-plan-script.sh)" >> $GITHUB_OUTPUT
+          cat temp-msg.txt
+          rm temp-msg.txt
       
       - name: Run terraform apply
         if: ${{ (steps.tf-plan.outputs.clean_deploy == 'true') || (github.event.inputs.tf-cmd == 'apply') }}
