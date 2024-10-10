@@ -71,6 +71,13 @@ jobs:
           role-to-assume: ${{ secrets.AWS_GH_ACTIONS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
+  
+      - name: Initialize terraform
+        working-directory: scripts/terraform
+        run: terraform init
+
       - name: Check privileged user
         id: priv-check
         working-directory: scripts
@@ -79,20 +86,14 @@ jobs:
           echo "is_priv=$is_priv" >> $GITHUB_OUTPUT
           if [ "$is_priv" = "true" ]; then
             echo "${{ github.triggering_actor }} is a privileged user."
+            echo "Skipping terraform plan step."
           else
             echo "${{ github.triggering_actor }} is not a privileged user."
           fi
 
-      - name: HashiCorp - Setup Terraform
-        uses: hashicorp/setup-terraform@v3.1.2
-  
-      - name: Initialize terraform
-        working-directory: scripts/terraform
-        run: terraform init
-
       - name: Run terraform plan
         id: tf-plan
-        if: ${{ (github.event_name == 'push') || (github.event.inputs.tf-cmd == 'plan') }}
+        if: ${{ (github.event_name == 'push') || (github.event.inputs.tf-cmd == 'plan') && (steps.priv-check.outputs.is_priv != 'true') }}
         working-directory: scripts
         run: |
           echo "clean_deploy=$(./tf-plan-script.sh)" >> $GITHUB_OUTPUT
@@ -100,7 +101,7 @@ jobs:
           rm temp-msg.txt
       
       - name: Run terraform apply
-        if: ${{ (steps.tf-plan.outputs.clean_deploy == 'true') || (github.event.inputs.tf-cmd == 'apply') }}
+        if: ${{ (steps.priv-check.outputs.is_priv == 'true') || (steps.tf-plan.outputs.clean_deploy == 'true') || (github.event.inputs.tf-cmd == 'apply') }}
         working-directory: scripts
         run: |
           clean_deploy=${{ steps.tf-plan.outputs.clean_deploy }}
