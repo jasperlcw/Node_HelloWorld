@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$#" -ne 2 ]; then
-  echo "Usage: ./check-privileged-user {name-to-check} {comma-delimited-authorized-names}"
+  echo "Usage: ./check-privileged-user.sh {name-to-check} {comma-delimited-authorized-names}"
   exit 255
 fi
 
