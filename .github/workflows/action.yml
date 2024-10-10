@@ -122,7 +122,7 @@ jobs:
       
       - name: Run terraform apply
         if: ${{ (steps.tf-plan.outputs.clean_deploy == 'true') || (github.event.inputs.tf-cmd == 'apply') }}
-        working-directory: scripts/terraform
+        working-directory: scripts
         run: |
           clean_deploy=${{ steps.tf-plan.outputs.clean_deploy }}
           priv_user=${{ steps.priv-check.outputs.is_priv }}
