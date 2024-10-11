@@ -25,6 +25,8 @@ jobs:
   aws-docker:
     name: Create and Publish Docker image on AWS ECR
     runs-on: ubuntu-latest
+    outputs:
+      IMAGE_TAG: ${{ steps.build-image.outputs.image_tag }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -36,20 +38,19 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to ECR
-        if: ${{ github.event_name == 'push' }}
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2.0.1
       
       - name: Build, tag and push image to ECR
-        if: ${{ github.event_name == 'push' }}
         id: build-image
         env:
             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             ECR_REPOSITORY: ${{ secrets.ECR_REPO_NAME }}
-            IMAGE_TAG: latest
+            IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
       
   aws-deploy:
     name: Deploy to AWS via Terraform
@@ -90,7 +91,7 @@ jobs:
         if: ${{ !(steps.priv-check.outputs.is_priv == 'true') && (github.event_name == 'push' || github.event.inputs.tf-cmd == 'plan') }}
         working-directory: scripts
         run: |
-          echo "clean_deploy=$(./tf-plan-script.sh)" >> $GITHUB_OUTPUT
+          echo "clean_deploy=$(./tf-plan-script.sh ${{ needs.aws-docker.outputs.IMAGE_TAG }})" >> $GITHUB_OUTPUT
           cat temp-msg.txt
           rm temp-msg.txt
       
@@ -100,5 +101,5 @@ jobs:
         run: |
           clean_deploy=${{ steps.tf-plan.outputs.clean_deploy }}
           priv_user=${{ steps.priv-check.outputs.is_priv }}
-          ./tf-apply-script.sh $clean_deploy $priv_user
+          ./tf-apply-script.sh $clean_deploy $priv_user ${{ needs.aws-docker.outputs.IMAGE_TAG }}
           

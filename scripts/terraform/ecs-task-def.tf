@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "helloworld-td" {
   container_definitions = jsonencode([
     {
         name = "helloworld-container"
-        image = "879381256847.dkr.ecr.us-east-2.amazonaws.com/terraform_container_repo:latest"
+        image = "879381256847.dkr.ecr.us-east-2.amazonaws.com/terraform_container_repo:${var.IMAGE_TAG}"
         portMappings = [
             {
                 name = "http-port-8080"

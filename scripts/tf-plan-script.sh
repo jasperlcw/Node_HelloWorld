@@ -1,7 +1,9 @@
 #!/bin/bash
 
+image_tag=$1
+
 status=0
-./terraform-check.sh > temp-msg.txt
+./terraform-check.sh $image_tag > temp-msg.txt
 status="$?"
 if [ "$status" -eq 0 ]; then
   clean_deploy='n/a'

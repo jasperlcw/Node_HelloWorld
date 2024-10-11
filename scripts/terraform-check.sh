@@ -1,7 +1,9 @@
 #!/bin/bash
 
+image_tag=$1
+
 cd ./terraform
-terraform plan -no-color > ./tfplan.txt
+terraform plan -var="IMAGE_TAG=$image_tag" -no-color > ./tfplan.txt
 if [ "$?" -ne "0" ]; then
   rm ./tfplan.txt
   exit 255
