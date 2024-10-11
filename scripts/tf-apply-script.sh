@@ -19,6 +19,5 @@ elif [ "$priv_user" = 'true' ]; then
   terraform apply -var="IMAGE_TAG=$image_tag" -auto-approve
 else 
   echo 'Failing the workflow as it was neither initiated by a privileged user nor was it a clean deploy.'
-  echo 'If you are not a privileged user but would like to deploy changes to ECS, please run the workflow from the terraform plan stage.'
   exit 1
 fi
