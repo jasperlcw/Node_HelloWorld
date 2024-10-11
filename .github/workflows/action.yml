@@ -91,7 +91,7 @@ jobs:
         if: ${{ !(steps.priv-check.outputs.is_priv == 'true') && (github.event_name == 'push' || github.event.inputs.tf-cmd == 'plan') }}
         working-directory: scripts
         run: |
-          echo "clean_deploy=$(./tf-plan-script.sh ${{ needs.aws-docker.outputs.IMAGE_TAG }})" >> $GITHUB_OUTPUT
+          echo "clean_deploy=$(./tf-plan-script.sh image_tag=${{ needs.aws-docker.outputs.IMAGE_TAG }})" >> $GITHUB_OUTPUT
           cat temp-msg.txt
           rm temp-msg.txt
       
@@ -101,5 +101,5 @@ jobs:
         run: |
           clean_deploy=${{ steps.tf-plan.outputs.clean_deploy }}
           priv_user=${{ steps.priv-check.outputs.is_priv }}
-          ./tf-apply-script.sh $clean_deploy $priv_user ${{ needs.aws-docker.outputs.IMAGE_TAG }}
+          ./tf-apply-script.sh clean_deploy=$clean_deploy priv_user=$priv_user image_tag=${{ needs.aws-docker.outputs.IMAGE_TAG }}
           

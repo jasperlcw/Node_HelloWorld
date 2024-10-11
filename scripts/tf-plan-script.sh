@@ -1,6 +1,11 @@
 #!/bin/bash
 
-image_tag=$1
+if [ "$#" -ne 1 ]; then
+  echo "Usage: ./tf-plan-script.sh image_tag={docker-image-tag}"
+  exit 255
+fi
+
+image_tag=${1#'image_tag='}
 
 status=0
 ./terraform-check.sh $image_tag > temp-msg.txt
