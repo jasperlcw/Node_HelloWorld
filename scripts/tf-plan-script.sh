@@ -1,11 +1,11 @@
 #!/bin/bash
 
 if [ "$#" -ne 1 ]; then
-  echo "Usage: ./tf-plan-script.sh image_tag={docker-image-tag}"
+  echo "Usage: ./tf-plan-script.sh -image_tag={docker-image-tag}"
   exit 255
 fi
 
-image_tag=${1#'image_tag='}
+image_tag=${1#'-image_tag='}
 
 cd ./terraform
 terraform plan -var="IMAGE_TAG=$image_tag" -no-color > ./tfplan.txt

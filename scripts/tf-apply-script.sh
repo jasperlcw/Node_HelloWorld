@@ -1,13 +1,13 @@
 #!/bin/bash
 
 if [ "$#" -ne 3 ]; then
-  echo "Usage: ./tf-apply-script.sh clean_deploy={true|false} priv_user={true|false} image_tag={docker-image-tag}"
+  echo "Usage: ./tf-apply-script.sh -clean_deploy={true|false} -priv_user={true|false} -image_tag={docker-image-tag}"
   exit 255
 fi
 
-clean_deploy=${1#'clean_deploy='}
-priv_user=${2#'priv_user='}
-image_tag=${3#'image_tag='}
+clean_deploy=${1#'-clean_deploy='}
+priv_user=${2#'-priv_user='}
+image_tag=${3#'-image_tag='}
 
 if [ "$clean_deploy" = 'true' ]; then
   echo 'Running terraform apply as it is a clean deploy.'
