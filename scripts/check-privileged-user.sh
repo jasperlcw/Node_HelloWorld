@@ -16,4 +16,4 @@ for priv_user in $(echo $name_list | tr "," " "); do
 done
 
 echo "false"
-exit 1
+exit 0
