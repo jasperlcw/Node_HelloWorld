@@ -79,7 +79,7 @@ jobs:
 
       - name: Run terraform plan
         id: tf-plan
-        if: ${{ !(steps.priv-check.outputs.is_priv == 'true') && (github.event_name == 'push') }}
+        if: ${{ !(steps.priv-check.outputs.is_priv == 'true') }}
         working-directory: scripts
         run: |
           echo "clean_deploy=$(./tf-plan-script.sh --image_tag=${{ needs.aws-docker.outputs.IMAGE_TAG }})" >> $GITHUB_OUTPUT
