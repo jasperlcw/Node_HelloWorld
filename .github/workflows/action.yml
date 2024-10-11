@@ -1,15 +1,6 @@
 name: Push the Docker image to AWS ECR Repo and Deploy to ECS
 on:
   workflow_dispatch:
-    inputs:
-      tf-cmd:
-        description: 'The command to run terraform with'
-        required: true
-        default: 'plan'
-        type: choice
-        options:
-          - plan
-          - apply
   push:
     branches:
     - main
@@ -88,7 +79,7 @@ jobs:
 
       - name: Run terraform plan
         id: tf-plan
-        if: ${{ !(steps.priv-check.outputs.is_priv == 'true') && (github.event_name == 'push' || github.event.inputs.tf-cmd == 'plan') }}
+        if: ${{ !(steps.priv-check.outputs.is_priv == 'true') && (github.event_name == 'push') }}
         working-directory: scripts
         run: |
           echo "clean_deploy=$(./tf-plan-script.sh --image_tag=${{ needs.aws-docker.outputs.IMAGE_TAG }})" >> $GITHUB_OUTPUT
@@ -96,7 +87,7 @@ jobs:
           rm temp-msg.txt
       
       - name: Run terraform apply
-        if: ${{ (steps.priv-check.outputs.is_priv == 'true') || (steps.tf-plan.outputs.clean_deploy == 'true') || (github.event.inputs.tf-cmd == 'apply') }}
+        if: ${{ (steps.priv-check.outputs.is_priv == 'true') || (steps.tf-plan.outputs.clean_deploy == 'true') }}
         working-directory: scripts
         run: |
           clean_deploy=${{ steps.tf-plan.outputs.clean_deploy }}
